@@ -14,14 +14,23 @@ from detectors.shoulder_press import ShoulderPressDetector
 from detectors.lunges import LungesDetector
 from services.config.workout_config import POSE_CONNECTIONS
 
-
 class VideoProcessorClass(VideoProcessorBase):
     def __init__(self):
         self._lock = threading.Lock()
         self._latest_metrics = None
         self._exercise_type = "Squats"
 
-        model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
+        # --- YAHAN MAIN FIX HAI ---
+        # 1. Is specific file ki exact directory path nikalna
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # 2. Path build karna: services -> vision se 2 level bahar aana (Main App mein), fir ml_models mein jana
+        model_path = os.path.join(current_file_dir, "..", "..", "ml_models", "pose_landmarker_full.task")
+        
+        # 3. Path ko normalize/clean karna (taaki koi system confusion na ho)
+        model_path = os.path.abspath(model_path)
+        # --------------------------
+
         base_option = python.BaseOptions(model_asset_path=model_path)
 
         options = vision.PoseLandmarkerOptions(
@@ -121,7 +130,6 @@ class VideoProcessorClass(VideoProcessorBase):
             self._draw_press_overlays(img, metrics)
         elif ex_type == "Lunges":
             self._draw_lunge_overlays(img, metrics)
-
 
     def _draw_squats_overlays(self, img, metrics):
         h, _ = img.shape[:2]
